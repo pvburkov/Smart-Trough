@@ -21,3 +21,5 @@ class PhotoBot():
         метод класса PhotoBot, который загружает фотографию в чат-бот Telegram
         """
         pass
+
+	#simple comment
