@@ -34,9 +34,10 @@ def photobot_work(token, photo_dir):
         new_file_time = 0
         for file in os.listdir(photo_dir):
             file_path = fpath(photo_dir, file)
-            if file.split('.')[1] == 'jpg' and os.path.getmtime(file_path) > new_file_time:
-                new_file = file_path
-                new_file_time = os.path.getmtime(file_path)
+            if os.path.isfile(file_path):
+                if file.split('.')[1] == 'jpg' and os.path.getmtime(file_path) > new_file_time:
+                    new_file = file_path
+                    new_file_time = os.path.getmtime(file_path)
         photo = open(new_file, 'rb')
         bot.send_photo(message.chat.id, photo)
         photo.close()
@@ -46,9 +47,10 @@ def photobot_work(token, photo_dir):
         old_file_time = 20000000000
         for file in os.listdir(photo_dir):
             file_path = fpath(photo_dir, file)
-            if file.split('.')[1] == 'jpg' and os.path.getmtime(file_path) < old_file_time:
-                old_file = file_path
-                old_file_time = os.path.getmtime(file_path)
+            if os.path.isfile(file_path):
+                if file.split('.')[1] == 'jpg' and os.path.getmtime(file_path) < old_file_time:
+                    old_file = file_path
+                    old_file_time = os.path.getmtime(file_path)
         photo = open(old_file, 'rb')
         bot.send_photo(message.chat.id, photo)
         photo.close()
@@ -57,9 +59,10 @@ def photobot_work(token, photo_dir):
     def handle_random(message):
         while True:
             rand_file = random.choice(os.listdir(photo_dir))
-            if rand_file.split('.')[1] == 'jpg':
-                break
-        photo = open(fpath(photo_dir, file), 'rb')
+            if os.path.isfile(rand_file):    
+                if rand_file.split('.')[1] == 'jpg':
+                    break
+        photo = open(fpath(photo_dir, rand_file), 'rb')
         bot.send_photo(message.chat.id, photo)
         photo.close()
 
@@ -68,10 +71,11 @@ def photobot_work(token, photo_dir):
         timestamp = time.time()
         for file in os.listdir(photo_dir):
             file_path = fpath(photo_dir, file)
-            if file.split('.')[1] == 'jpg' and timestamp - os.path.getmtime(file_path) < 3600:
-                photo = open(file_path, 'rb')
-                bot.send_photo(message.chat.id, photo)
-                photo.close()
+            if os.path.isfile(file_path):
+                if file.split('.')[1] == 'jpg' and timestamp - os.path.getmtime(file_path) < 3600:
+                    photo = open(file_path, 'rb')
+                    bot.send_photo(message.chat.id, photo)
+                    photo.close()
 
     @bot.message_handler(content_types=["text"])
     def handle_message(message):
@@ -81,6 +85,7 @@ def photobot_work(token, photo_dir):
         try:
             bot.polling(none_stop=True)
         except ConnectionResetError:
+            logger(ConnectionResetError)
             time.sleep(3)
 
 if __name__ == '__main__':
