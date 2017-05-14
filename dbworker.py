@@ -3,7 +3,7 @@ import sqlite3 as lite
 import unittest
 
 def db_logger(error):
-    log = open('db_errors.log', 'w')
+    log = open('db_errors.log', 'a')
     out = datetime.strftime(datetime.now(), "%Y.%m.%d %H:%M:%S")
     out += ' : Error ' + str(error)
     log.close()
