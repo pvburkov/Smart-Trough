@@ -11,7 +11,7 @@ class DHT11:
     error_code = None
     temperature = None
     humidity = None
-
+    
     def __init__(self, pin):
         self.pin = pin
         GPIO.setmode(GPIO.BOARD)
@@ -185,3 +185,4 @@ class DHT11:
     def is_valid(self):
         return self.error_code == DHT11.ERR_NO_ERROR
 
+    
