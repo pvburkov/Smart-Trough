@@ -1,9 +1,10 @@
 from datetime import datetime
+from time import time
+import config
 import os
 import os.path
 import random
 import telebot
-import time
 import unittest 
 
 def logger(error):
@@ -18,22 +19,12 @@ def logger(error):
 def fpath(fdir, fname):
     return fdir + '/' + fname
 
-def photobot_work(token, photo_dir):
+def photobot_work(photo_dir):
     """
     Функция, загружающая фотографии в чат-бот Telegram.
-    In: токен для доступа в чат-бот, директория с фотографиями
+    In: директория с фотографиями
     """
-    WEBHOOK_HOST = '52.169.114.1'
-    WEBHOOK_PORT = 443  
-    WEBHOOK_LISTEN = '0.0.0.0'  # На некоторых серверах придется указывать такой же IP, что и выше
-
-    WEBHOOK_SSL_CERT = './webhook_cert.pem'  # Путь к сертификату
-    WEBHOOK_SSL_PRIV = './webhook_pkey.pem'  # Путь к приватному ключу
-
-    WEBHOOK_URL_BASE = "https://%s:%s" % (WEBHOOK_HOST, WEBHOOK_PORT)
-    WEBHOOK_URL_PATH = "/%s/" % (token)
-
-    bot = telebot.TeleBot(token)
+    bot = telebot.TeleBot(config.BOT_TOKEN)
 
     class WebhookServer(object):
         @cherrypy.expose
@@ -93,7 +84,7 @@ def photobot_work(token, photo_dir):
 
     @bot.message_handler(commands = ['hour'])
     def handle_hour(message):
-        timestamp = time.time()
+        timestamp = time()
         for file in os.listdir(photo_dir):
             file_path = fpath(photo_dir, file)
             if os.path.isfile(file_path):
@@ -106,21 +97,24 @@ def photobot_work(token, photo_dir):
     def handle_message(message):
         bot.send_message(message.chat.id, 'Tweet! Tweet-tweet! Tweet!')
 
-    # снятие вебхука перед повторной установкой (избавляет от некоторых проблем)
+    # (пере)запуск вебхука
     bot.remove_webhook()
-    bot.set_webhook(url = WEBHOOK_URL_BASE + WEBHOOK_URL_PATH,
-                    certificate = open(WEBHOOK_SSL_CERT, 'r'))
+    bot.set_webhook(url = config.WEBHOOK_URL_BASE + config.WEBHOOK_URL_PATH,
+                    certificate = open(config.WEBHOOK_SSL_CERT, 'r'))
     
     # настройки сервера CherryPy
     cherrypy.config.update({
-        'server.socket_host': WEBHOOK_LISTEN,
-        'server.socket_port': WEBHOOK_PORT,
+        'server.socket_host': config.WEBHOOK_LISTEN,
+        'server.socket_port': config.WEBHOOK_PORT,
         'server.ssl_module': 'builtin',
-        'server.ssl_certificate': WEBHOOK_SSL_CERT,
-        'server.ssl_private_key': WEBHOOK_SSL_PRIV
+        'server.ssl_certificate': config.WEBHOOK_SSL_CERT,
+        'server.ssl_private_key': config.WEBHOOK_SSL_PRIV
     })
 
-    cherrypy.quickstart(WebhookServer(), WEBHOOK_URL_PATH, {'/': {}})
+    cherrypy.quickstart(WebhookServer(), config.WEBHOOK_URL_PATH, {'/': {}})
 
 if __name__ == '__main__':
-    photobot_work_v2('301887493:AAFdNXpQbbw_90cS8Ai7qfuquxejKILicZk', os.getcwd())
+    try:
+        photobot_work(os.getcwd())
+    except Exception as e:
+        logger(e)
