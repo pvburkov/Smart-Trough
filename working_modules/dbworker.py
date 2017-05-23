@@ -14,18 +14,14 @@ class DBWorker():
     поля: дата/время, температура, атмосферное давление, влажность воздуха
     """
     
-    def __init__(self, **kwargs):
+    def __init__(self, dbname):
         """
         конструктор класса DBWorker
         """
         self.datetime_point = datetime.strftime(datetime.now(), "%Y.%m.%dT%H:%M:%S")
-        self.temperature = kwargs['temperature']
-        self.pressure = kwargs['pressure']
-        self.humidity = kwargs['humidity']
-        self.photo_path = kwargs['photo_path']
-        self.dbname = kwargs['dbname']
+        self.dbname = dbname
 
-    def db_insert_data(self):
+    def db_insert_data(self, temperature, pressure, humidity, photo_path):
         """
         метод класса DBWorker: записывает информацию из полей класса в БД
         """
@@ -42,7 +38,7 @@ class DBWorker():
             query += 'Humidity INTEGER, PhotoPath TEXT);'
             cur.execute(query)
             query2 = 'INSERT INTO TroughInfo(DateTime, Temperature, Pressure, Humidity, PhotoPath) VALUES(?,?,?,?,?);'
-            cur.execute(query2, (self.datetime_point, self.temperature, self.pressure, self.humidity, self.photo_path))
+            cur.execute(query2, (self.datetime_point, temperature, pressure, humidity, photo_path))
         
         dbcon.close()
         return True
@@ -75,12 +71,10 @@ class Test_DBWorker(unittest.TestCase):
     тест для проверки корректности приходящих данных
     """
     def test_make_worker(self):
-        db = DBWorker(temperature = 13, pressure = 760, humidity = 80, photo_path = r'photo.jpeg', dbname = 'testdb.db')
-        self.assertEqual(db.temperature, 13)
-        self.assertEqual(db.humidity, 80)
-        self.assertEqual(type(db.photo_path), str)
+        db = DBWorker(dbname = 'testdb.db')
+        self.assertEqual(type(db.dbname), str)
 
-        self.assertTrue(db.db_insert_data())
+        self.assertTrue(db.db_insert_data(temperature = 13, pressure = 760, humidity = 80, photo_path = r'photo.jpeg'))
         self.assertTrue(db.db_get_all_data())
 
 # end Test_DBWorker description
