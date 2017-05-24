@@ -1,9 +1,13 @@
+#!/usr/bin/env python3
 from sensors import th_sensors as th, pressure_sensors as ps, motion_sensors as ms
-from works import picam
+from working_modules import picam, photo_sender, dbworker
 from datetime import datetime
+import time
 
 TH_PIN = 7
 MS_PIN = 13
+
+DBNAME = 'through.db'
 
 motion_flag = 1
 
@@ -16,14 +20,16 @@ while 1:
     if motion_sensor.is_motion & motion_flag:
         date_motion = datetime.now()
         photo_path = camera.take_photo(date_motion)
-        # Отправить в телеграм-бот фотографию которая находится по photo_path
+        photo_sender.send_photo(photo_path)
         pressure_sensor.read()
         th_sensor.read()
         temperature = pressure_sensor.temperature
         humidity = th_sensor.humidity
         pressure = pressure_sensor.pressure
         print('T = ', temperature,'Hum = ',humidity, 'Press = ', pressure, 'Date = ', date_motion)
-        # Занести в БД temperature, humidity, pressure, date_motion, photo_path
+        db = dbworker.DBWorker(DBNAME)
+        db.db_insert_data(temperature,pressure, humidity, photo_path)
         motion_flag = 0
+        time.sleep(3)
     if not motion_sensor.is_motion:
         motion_flag = 1
