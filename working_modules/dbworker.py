@@ -9,18 +9,18 @@ def db_logger(error):
     out += ' : Error ' + str(error)
     log.close()
 
-
 class DBWorker():
     """
     класс для работы с базой данных
     поля: дата/время, температура, атмосферное давление, влажность воздуха
     """
-
+    
     def __init__(self, dbname):
         """
         конструктор класса DBWorker
         """
         self.datetime_point = datetime.strftime(datetime.now(), "%Y.%m.%d-%H:%M:%S")
+
         self.dbname = dbname
 
     def db_insert_data(self, temperature, pressure, humidity, photo_path):
@@ -36,12 +36,13 @@ class DBWorker():
         with dbcon:
             cur = dbcon.cursor()
             query = 'CREATE TABLE IF NOT EXISTS TroughInfo(ID INTEGER PRIMARY KEY, '
+
+
             query += 'DateTime TEXT, Temperature INTEGER, Pressure INTEGER, '
             query += 'Humidity INTEGER, PhotoPath TEXT);'
             cur.execute(query)
             query2 = 'INSERT INTO TroughInfo(DateTime, Temperature, Pressure, Humidity, PhotoPath) VALUES(?,?,?,?,?);'
             cur.execute(query2, (self.datetime_point, temperature, pressure, humidity, photo_path))
-
         dbcon.close()
         return True
 
@@ -67,13 +68,13 @@ class DBWorker():
         return True
 
 
+
 # end DBWorker description
 
 class Test_DBWorker(unittest.TestCase):
     """
     тест для проверки корректности приходящих данных
     """
-
     def test_make_worker(self):
         db = DBWorker(dbname='testdb.db')
         self.assertEqual(type(db.dbname), str)
