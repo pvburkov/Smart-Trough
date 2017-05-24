@@ -23,4 +23,4 @@ class PiCam(picamera.PiCamera):
         self.directory(path)
         photo_path = path + '/' + dt_photo.strftime('%H_%M') + '.jpg'
         self.capture(photo_path)
-        return path
+        return photo_path
